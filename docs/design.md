@@ -28,6 +28,9 @@ This document explains how key parts in this project are to be implemented. This
 - We don't need to store anything to calculate the bid ask spread as it is updated everytime we recieve a new message from the partial book depth stream
 - Each time we recieve from this stream we just have to find the best bid and best ask from the JSON and do a simple subtraction of best bid on best ask
 - Formula: `(best_ask - best_bid) / (mid * 10_000)`
+- For this metric I will be keeping track of the mean and standard deviation of the spread using EWMA, so the formula for mean is: `mean = a * x + (1 - a) * mean`, and for std it is:
+`std = a * x + (1 - a) * std`
+- Keeping a rolling mean and std are useful because it helps us identify anamoly spread_bps readings. As it helps us compare to the rolling mean, and calculate a z-score that tell us where it probabilistically sits.
 
 ### OBI
 - OBI (Order Book Imbalance) determines the balance (or imbalance) between bid and ask volume over the top-N levels of the order book
