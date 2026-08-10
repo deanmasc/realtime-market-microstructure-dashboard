@@ -21,13 +21,13 @@ This document explains how key parts in this project are to be implemented. This
 - In the case where bursts occur and there is a lot of messages in the kernel buffer the producer has to read and push to the queue, we allow the producer to keep on recieveing and pushing as long as there is data in the kernel buffer during this burst until we identify the queue is full after a push, in this case we do not want to keep recieving from the socket and want to let the consumer process. Therefore on this condition we `await asyncio.sleep(0)`, which hands back to the consumer task, and then the consumer task will drain the queue and return to the producer again allowing this process to repeat until the burst has reached completion. 
 - I chose to handle the burst case like this as the alternative was to `await asyncio.sleep(0)` after every push to the queue from the consumer, thereofre keeping the queue at empty ot length 1 at all times. However, this would mean that during bursts we do not allow the producer to empty from the kernel buffer as quick as possible, and we want to try to do this to make sure we arent dropping messages and if there is messages to be pushed to the queue we want to do this.
 
-## 3. Performant Metrics Updates & State Management
+## 3. Performant Metrics Updates
 
 ### Bid-Ask Spread:
-- Bid-Ask spread is simply the difference between the best bid and best ask at a certain point in time
+- Bid-Ask spread is simply the difference between the best bid and best ask at a certain point in time, we calculate this expressed in basis points relative to the mid
 - We don't need to store anything to calculate the bid ask spread as it is updated everytime we recieve a new message from the partial book depth stream
 - Each time we recieve from this stream we just have to find the best bid and best ask from the JSON and do a simple subtraction of best bid on best ask
-- Formula: `best_ask - best_bid`
+- Formula: `(best_ask - best_bid) / (mid * 10_000)`
 
 ### OBI
 - OBI (Order Book Imbalance) determines the balance (or imbalance) between bid and ask volume over the top-N levels of the order book
