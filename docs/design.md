@@ -23,4 +23,25 @@ This document explains how key parts in this project are to be implemented. This
 
 ## 3. Performant Metrics Updates & State Management
 
+### Bid-Ask Spread:
+- Bid-Ask spread is simply the difference between the best bid and best ask at a certain point in time
+- We don't need to store anything to calculate the bid ask spread as it is updated everytime we recieve a new message from the partial book depth stream
+- Each time we recieve from this stream we just have to find the best bid and best ask from the JSON and do a simple subtraction of best bid on best ask
+- Formula: `best_ask - best_bid`
+
+### OBI
+- OBI (Order Book Imbalance) determines the balance (or imbalance) between bid and ask volume over the top-N levels of the order book
+- Therefore, we get all the information we need from the partial book depth stream, and can calculate the bid_volume and ask_volume to plug into the formula, the range of the result is [-1, 1], where values near -1 mean there is more ask volume, and vice versa for +1
+- Formula: `(bid_volume - ask_volume)/(bid_volume + ask_volume)`
+- I believe we will have to do this traversal & aggregation over the top-N levels because there is no easy way to cache the bid and ask volumes as we technicaly could by maintaining our own order book via the aggregated trades stream, however this seems a signidicant trade off to just traversing ~5 price levels for each side (come back to this because now I am thinking we listen to the aggregated trades stream anyway, however the trade off is keeping a state of our own book to keep a running count of bid_volume, ask_volume. However this would mean after we get the first message from the partial book depth stream we wouldn't need to lsiten anymore because we are making our own book from the aggregated trades stream and I don't know if this is intended)
+
+### VPIN
+- VPIN estimated directional/informed trading by describing the initiator side proportion over volume interals
+- For example, say our bucket is 50BTC, when 50BTC worth of trades are executed we keep track of V_buy and V_sell, where each represents the volume initiated by the buyer or seller, the domain for this metric is [0, 1], where 0 means the initiator side is perfectly even and 1 means the aggressor is on one side, meaning it's likely adverse selection is occurring
+- Formula: `abs(V_buy - V_sell)/V*`
+- The above formula is the `VPIN_i` for a single volume bucket, the actual `VPIN` metric we want to display will be the average of the last `N` `VPIN_i`, from the last `N` buckets traded
+- Therefore, we need an efficient way of calculating/updating this metric as we recieve confirmations of new trades from the stream
+The general idea is recieve data from the aggregate trades stream, increment V_buy or V_sell, if we have NOT filled a bucket from this trade there is no update to the global `VPIN` metric. If we HAVE filled a bucket, then we calculate `abs(V_buy - V_sell)/V*` for that bucket. We then need to apply this `VPIN_i` to our previous `VPIN_0 to VPIN_i-1` values (and remove oldest `VPIN_i` if need be). 
+- To do this, I intend to store each `VPIN_i` in a deque, when a new `VPIN_i` is calculated because a bucket was filled then if the deque is already at capacity (likely going to be ~10), then we pop the oldest VPIN off the deque, and push the new `VPIN_i` to the deque. However, we also need to update the global `VPIN` metric, we need to do this by removing the influence of the oldest `VPIN_i` just removed and adding the influence of the newest `VPIN_i` just calculated. I have constructed to following formula to do this: `VPIN = VPIN + 1/C * (VPIN_new - VPIN _old)`, where C is capacity. Reminder that this formula is for the case where we need to remove an old VPIN because we were at capacity, if we are not at capacity and can just add the new `VPIN_i` to the deque, and re-calculate the global `VPIN` using this formula: `VPIN = 1/(S + 1) * (S * VPIN + VPIN_new)`, where S is the amount of buckets filled before the new `VPIN_i` was added.
+
 ## 4. Dashboard Real-Time Updates
