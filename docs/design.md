@@ -48,3 +48,5 @@ The general idea is recieve data from the aggregate trades stream, increment V_b
 - To do this, I intend to store each `VPIN_i` in a deque, when a new `VPIN_i` is calculated because a bucket was filled then if the deque is already at capacity (likely going to be ~10), then we pop the oldest VPIN off the deque, and push the new `VPIN_i` to the deque. However, we also need to update the global `VPIN` metric, we need to do this by removing the influence of the oldest `VPIN_i` just removed and adding the influence of the newest `VPIN_i` just calculated. I have constructed to following formula to do this: `VPIN = VPIN + 1/C * (VPIN_new - VPIN _old)`, where C is capacity. Reminder that this formula is for the case where we need to remove an old VPIN because we were at capacity, if we are not at capacity and can just add the new `VPIN_i` to the deque, and re-calculate the global `VPIN` using this formula: `VPIN = 1/(S + 1) * (S * VPIN + VPIN_new)`, where S is the amount of buckets filled before the new `VPIN_i` was added.
 
 ## 4. Dashboard Real-Time Updates
+
+TBD - Come back to this after implementing features 1-3
