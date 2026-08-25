@@ -13,16 +13,19 @@ class BinanceSockethandler:
 
     async def recv_data(self) -> None:
         print("Commencing stream data retrieval")
-        while (self.recv_data_mode):
-            if self.ws is not None:
-                try:
+
+        try:
+            while (self.recv_data_mode):
+                if self.ws is not None:
                     msg = await self.ws.recv()
                     print(f"Message recieved: {msg}")
-                finally:
-                    self.close_connection()
+        finally:
+            await self.close_connection()
+
         print("Stopped recieveing data")
 
     async def close_connection(self) -> None:
+        print("\nClosing socket connection")
         await self.ws.close()
 
     def set_recv_data_mode(self, status: bool) -> None:

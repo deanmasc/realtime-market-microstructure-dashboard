@@ -9,7 +9,11 @@ async def main():
     """
     connection_handler = BinanceSockethandler()
     await connection_handler.setup_connection() # creates websocket
-    await connection_handler.recv_data() # loops on recieveing data
+
+    try:
+        await connection_handler.recv_data() # loops on recieveing data
+    except asyncio.CancelledError:
+        print("The program is exiting due to a Ctrl-C event")
 
 if __name__ == "__main__":
     asyncio.run(main())
