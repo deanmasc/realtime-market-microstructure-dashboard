@@ -2,8 +2,9 @@ import asyncio, websockets, json
 from utils.constants import STREAM_URL, PARTIAL_DEPTH_STREAM_NAME, AGGREGATE_TRADES_STREAM_NAME
 
 class BinanceSockethandler:
-    def __init__(self):
+    def __init__(self, message_queue: asyncio.Queue):
         self.ws = None
+        self.message_queue = message_queue
         self.recv_data_mode = True
 
     async def setup_connection(self) -> None:
@@ -18,7 +19,14 @@ class BinanceSockethandler:
             while (self.recv_data_mode):
                 if self.ws is not None:
                     msg = await self.ws.recv()
-                    print(f"Message recieved: {msg}")
+                    msg = json.loads(msg)
+                    if msg['stream'] == PARTIAL_DEPTH_STREAM_NAME:
+                        print("This message is from the partial depth stream")
+                    elif msg['stream'] == AGGREGATE_TRADES_STREAM_NAME:
+                        print("This message is from the aggregate trades stream")
+
+                    print(f"Message recieved: {msg}\n")
+        
         finally:
             await self.close_connection()
 

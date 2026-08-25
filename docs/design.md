@@ -36,7 +36,7 @@ This document explains how key parts in this project are to be implemented. This
 - OBI (Order Book Imbalance) determines the balance (or imbalance) between bid and ask volume over the top-N levels of the order book
 - Therefore, we get all the information we need from the partial book depth stream, and can calculate the bid_volume and ask_volume to plug into the formula, the range of the result is [-1, 1], where values near -1 mean there is more ask volume, and vice versa for +1
 - Formula: `(bid_volume - ask_volume)/(bid_volume + ask_volume)`
-- I believe we will have to do this traversal & aggregation over the top-N levels because there is no easy way to cache the bid and ask volumes as we technicaly could by maintaining our own order book via the aggregated trades stream, however this seems a signidicant trade off to just traversing ~5 price levels for each side (come back to this because now I am thinking we listen to the aggregated trades stream anyway, however the trade off is keeping a state of our own book to keep a running count of bid_volume, ask_volume. However this would mean after we get the first message from the partial book depth stream we wouldn't need to lsiten anymore because we are making our own book from the aggregated trades stream and I don't know if this is intended)
+- I believe we will have to do this traversal & aggregation over the top-N levels because there is no easy way to cache the bid and ask volumes as we technicaly could by maintaining our own order book via the aggregated trades stream, however this seems a significant trade off to just traversing ~5 price levels for each side.
 
 ### VPIN
 - VPIN estimated directional/informed trading by describing the initiator side proportion over volume interals
