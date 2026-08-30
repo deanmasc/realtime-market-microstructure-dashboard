@@ -1,7 +1,7 @@
 import asyncio
 from market_data.stream_handler import BinanceSockethandler
-from market_data.producer import producer
-from processing.consumer import consumer
+from market_data.producer import Producer
+from processing.consumer import Consumer
 
 async def main():
     """
@@ -12,10 +12,13 @@ async def main():
     message_queue = asyncio.Queue(maxsize=1000)
     connection_handler = BinanceSockethandler(message_queue)
     await connection_handler.setup_connection() # creates websocket
+    
+    producer = Producer(connection_handler)
+    consumer = Consumer(message_queue)
 
     async with asyncio.TaskGroup() as tg:
-        tg.create_task(producer(connection_handler))
-        tg.create_task(consumer(message_queue))
+        tg.create_task(producer.produce())
+        tg.create_task(consumer.consume())
 
 if __name__ == "__main__":
     try:

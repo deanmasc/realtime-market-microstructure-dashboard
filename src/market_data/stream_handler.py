@@ -24,7 +24,7 @@ class BinanceSockethandler:
                         print("This message is from the partial depth stream\n")
                     elif msg['stream'] == AGGREGATE_TRADES_STREAM_NAME:
                         print("This message is from the aggregate trades stream\n")
-                    print(f"Message recieved: {msg}\n")
+                    print(f"Message recieved:\n {msg}\n")
 
                     await self.message_queue.put(msg)
         
