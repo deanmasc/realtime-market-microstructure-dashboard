@@ -1,5 +1,8 @@
 import asyncio
-from market_data.stream_handler import BinanceSockethandler
 
 async def consumer(message_queue: asyncio.Queue):
-    pass
+    while (True):
+        msg = await message_queue.get()
+        print("Consumer is processing msg:\n")
+        print(msg)
+        # We then process the message

@@ -21,11 +21,12 @@ class BinanceSockethandler:
                     msg = await self.ws.recv()
                     msg = json.loads(msg)
                     if msg['stream'] == PARTIAL_DEPTH_STREAM_NAME:
-                        print("This message is from the partial depth stream")
+                        print("This message is from the partial depth stream\n")
                     elif msg['stream'] == AGGREGATE_TRADES_STREAM_NAME:
-                        print("This message is from the aggregate trades stream")
-
+                        print("This message is from the aggregate trades stream\n")
                     print(f"Message recieved: {msg}\n")
+
+                    await self.message_queue.put(msg)
         
         finally:
             await self.close_connection()
