@@ -42,6 +42,9 @@ class BidAskSpreadMetric(Metric):
             self.rolling_spread_bps_mean = self.rolling_spread_bps_mean + self.ALPHA * diff
             self.rolling_spread_bps_std = math.sqrt((1 - self.ALPHA) * (self.rolling_spread_bps_std**2 + self.ALPHA * diff**2))
 
+            print(f'UPDATED SPREAD BPS ROLLING MEAN = {self.rolling_spread_bps_mean}')
+            print(f'UPDATED SPREAD BPS ROLLING STD = {self.rolling_spread_bps_std}')
+
     
     def get_value(self) -> float:
         return self.value if self.value is not None else 0.0
