@@ -86,4 +86,32 @@ class OrderBookImbalanceMetric(Metric):
 
 
 class VPINMetric(Metric):
-    pass
+    BUCKET_VOLUME = 50 # refers to 50BTC units
+    N_VPINS = 10 # The number of bucket filled VPINs we use to calculate the global VPIN
+
+    def __init__(self):
+        super().__init__()
+        self.curr_V_buy = 0.0
+        self.curr_V_sell = 0.0
+        self.curr_bucket_filled = 0.0
+        self.vpin_window = deque(maxlen=self.N_VPINS)
+        self.vpin = 0.0
+
+    def update(self, msg: dict):
+            msg_data = msg['data']
+            volume = float(msg_data['q'])
+            is_buyer_aggressor = msg_data['m'] # True for buyer aggressor false for seller aggressor
+
+            if (self.curr_bucket_filled + volume) < self.BUCKET_VOLUME:
+                if is_buyer_aggressor:
+                    self.curr_V_buy += volume
+                else:
+                    self.curr_V_sell += volume
+                self.curr_bucket_filled += volume
+            else:
+                pass # pick it up from here
+
+    
+    def get_value(self) -> float:
+        return self.vpin
+
