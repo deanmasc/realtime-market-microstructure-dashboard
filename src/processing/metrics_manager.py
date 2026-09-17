@@ -6,7 +6,7 @@ class MetricsManager:
     def __init__(self):
         self.stream_metric_dict = defaultdict(list)
         self.stream_metric_dict[PARTIAL_DEPTH_STREAM_NAME].append(BidAskSpreadMetric())
-        # self.stream_metric_dict[PARTIAL_DEPTH_STREAM_NAME].append(OrderBookImbalanceMetric())
+        self.stream_metric_dict[PARTIAL_DEPTH_STREAM_NAME].append(OrderBookImbalanceMetric())
         # self.stream_metric_dict[AGGREGATE_TRADES_STREAM_NAME].append(VPINMetric())
 
     def process_metric_updates(self, msg) -> None:
