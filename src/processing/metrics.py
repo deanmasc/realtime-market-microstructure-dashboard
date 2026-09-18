@@ -86,7 +86,7 @@ class OrderBookImbalanceMetric(Metric):
 
 
 class VPINMetric(Metric):
-    BUCKET_VOLUME = 50 # refers to 50BTC units
+    BUCKET_VOLUME = 0.5 # refers to 50BTC units
     N_VPINS = 10 # The number of bucket filled VPINs we use to calculate the global VPIN
 
     def __init__(self):
@@ -101,15 +101,51 @@ class VPINMetric(Metric):
             msg_data = msg['data']
             volume = float(msg_data['q'])
             is_buyer_aggressor = msg_data['m'] # True for buyer aggressor false for seller aggressor
+            has_updated_global_vpin = False
 
-            if (self.curr_bucket_filled + volume) < self.BUCKET_VOLUME:
-                if is_buyer_aggressor:
-                    self.curr_V_buy += volume
+            while True:
+                if volume == 0:
+                    break
+                elif (self.curr_bucket_filled + volume) < self.BUCKET_VOLUME:
+                    if is_buyer_aggressor:
+                        self.curr_V_buy += volume
+                    else:
+                        self.curr_V_sell += volume
+                    self.curr_bucket_filled += volume
+                    break
                 else:
-                    self.curr_V_sell += volume
-                self.curr_bucket_filled += volume
-            else:
-                pass # pick it up from here
+                    leftover = (self.curr_bucket_filled + volume) - self.BUCKET_VOLUME
+                    curr_bucket_volume = volume - leftover
+
+                    if is_buyer_aggressor:
+                        self.curr_V_buy += curr_bucket_volume
+                    else:
+                        self.curr_V_sell += curr_bucket_volume
+
+                    vpin_i = abs(self.curr_V_buy - self.curr_V_sell)/self.BUCKET_VOLUME
+                    print(f'BUY AGRESSOR VOLUME = {self.curr_V_buy}, SELL AGGRESSOR VOLUME = {self.curr_V_sell}, bucket size = {self.BUCKET_VOLUME}')
+                    print(f'VPIN_i HAS BEEN COMPUTED = {vpin_i}')
+
+                    if len(self.vpin_window) == self.N_VPINS:
+                        vpin_old = self.vpin_window.popleft()
+                        self.vpin = self.vpin + 1/self.N_VPINS * (vpin_i - vpin_old)
+                    elif len(self.vpin_window) < self.N_VPINS:
+                        vpin_len = len(self.vpin_window)
+                        self.vpin = 1/(vpin_len + 1) * (vpin_len * self.vpin + vpin_i)
+
+                    has_updated_global_vpin = True
+                    self.vpin_window.append(vpin_i)
+                    self.curr_bucket_filled = 0.0
+                    self.curr_V_sell = 0.0
+                    self.curr_V_buy = 0.0
+                    volume = leftover
+
+            self.time_series_window.append(self.vpin)
+            if has_updated_global_vpin: print(f'UPDATED GLOBAL VPIN = {self.vpin}')
+
+
+
+
 
     
     def get_value(self) -> float:
