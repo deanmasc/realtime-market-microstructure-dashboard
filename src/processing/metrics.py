@@ -24,10 +24,10 @@ class BidAskSpreadMetric(Metric):
 
     def __init__(self):
         super().__init__()
-        self.spread_bps = None
-        self.best_bid = None
-        self.best_ask = None
-        self.mid = None
+        self.spread_bps = 0.0
+        self.best_bid = 0.0
+        self.best_ask = 0.0
+        self.mid = 0.0
         self.rolling_spread_bps_mean = None
         self.rolling_spread_bps_std = None
 
@@ -61,10 +61,10 @@ class OrderBookImbalanceMetric(Metric):
 
     def __init__(self):
         super().__init__()
-        self.obi = None
+        self.obi = 0.0
 
     def update(self, msg: dict):
-        bid_volume = ask_volume = 0
+        bid_volume = ask_volume = 0.0
         bids = msg['data']['bids']
         asks = msg['data']['asks']
 
@@ -73,7 +73,7 @@ class OrderBookImbalanceMetric(Metric):
             ask_volume += float(asks[i][1])
 
         if bid_volume + ask_volume == 0:
-            self.obi = 0
+            self.obi = 0.0
         else:
             self.obi = (bid_volume - ask_volume)/(bid_volume + ask_volume)
 
@@ -81,7 +81,7 @@ class OrderBookImbalanceMetric(Metric):
         print(f'UPDATED OBI VALUE = {self.obi}')
 
     def get_value(self) -> float:
-        return self.obi if self.obi is not None else 0.0
+        return self.obi
 
 
 
@@ -142,11 +142,6 @@ class VPINMetric(Metric):
 
             self.time_series_window.append(self.vpin)
             if has_updated_global_vpin: print(f'UPDATED GLOBAL VPIN = {self.vpin}')
-
-
-
-
-
     
     def get_value(self) -> float:
         return self.vpin
