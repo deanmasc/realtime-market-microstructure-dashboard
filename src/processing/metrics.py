@@ -14,9 +14,6 @@ class Metric(ABC):
     @abstractmethod
     def get_value(self): ...
 
-    # @abstractmethod
-    # def get_name(self): ...
-
 
 class BidAskSpreadMetric(Metric):
     BIP = 10000
@@ -53,7 +50,7 @@ class BidAskSpreadMetric(Metric):
 
     
     def get_value(self) -> float:
-        return self.spread_bps if self.spread_bps is not None else 0.0
+        return self.spread_bps
     
 
 class OrderBookImbalanceMetric(Metric):
