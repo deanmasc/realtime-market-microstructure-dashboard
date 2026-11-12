@@ -49,4 +49,9 @@ The general idea is recieve data from the aggregate trades stream, increment V_b
 
 ## 4. Dashboard Real-Time Updates
 
-TBD - Come back to this after implementing features 1-3
+- After completing milestones 1-3, the only remaining task to is update a UI interface in 'realtime' so that updates of these 3 metrics can be viewed on a browser, and that historical metric values can also be graphed and viewed.
+- In code, we have a concept of `MetricManager` which controls updating each metrics relevant to the relative stream message we have just recieved, however the update rate for the header, spread, OBI and VPIN is 250, 500, 500, 1000ms respectively so the update is triggered based on these rates as opposed to when the `MetricManager` updates any certain metric
+- We do not need to have a separate process for the UI/dashboard, we can have a separatew thread for running the dashboard UI component, which fethes the current state of the header and all 3 metrics at every update interval 
+- One thing to keep in mind is that although the dashboard UI is 'realtime', for each panel in the dashboard (header, spread, OBI and VPIN), the update rate is meant to be 250, 500, 500, 1000ms respectively, therefore on the UI process side there will need to be polling rather than just waking up when `recv()` returns something.
+- When we hit a poll and there is some metric to update I am assuming there will be some callback in which calls the `get_value` function for each metric and therefore updating the dashboard
+- In terms of specific frontend tools, I think I will use React for styling and some Python framework like Flask in conjunciton with Dash which is a web framework for building dashboards.
