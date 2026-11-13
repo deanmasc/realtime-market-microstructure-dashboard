@@ -2,6 +2,7 @@ import asyncio
 from market_data.stream_handler import BinanceSockethandler
 from market_data.producer import Producer
 from processing.consumer import Consumer
+from processing.metrics_manager import MetricsManager
 from dashboard.dashboard import Dashboard
 
 async def main():
@@ -10,7 +11,8 @@ async def main():
     - Establish connections with Binance Streams
     - Commence loop to run the loop of updating the dashboard in real time
     """
-    dashboard = Dashboard()
+    metrics_manager = MetricsManager()
+    dashboard = Dashboard(metrics_manager)
     dashboard.setup()
     
     message_queue = asyncio.Queue(maxsize=1000)
@@ -18,7 +20,7 @@ async def main():
     await connection_handler.setup_connection() # creates websocket
     
     producer = Producer(connection_handler)
-    consumer = Consumer(message_queue)
+    consumer = Consumer(message_queue, metrics_manager)
 
     async with asyncio.TaskGroup() as tg:
         tg.create_task(producer.produce())
