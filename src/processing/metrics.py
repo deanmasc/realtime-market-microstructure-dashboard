@@ -3,10 +3,11 @@ from collections import deque
 import math
 
 class Metric(ABC):
-    WINDOW_LENGTH = 10_000 # 10,000 * 4bytes = 40,000 bytes = ~40KB for each metric, all fit in L1/2 cache
-
     def __init__(self):
         self.time_series_window = deque(maxlen=self.WINDOW_LENGTH)
+
+    def append_time_series_value(self, value):
+        self.time_series_window.append(value)
 
     @abstractmethod
     def update(self, msg: dict): ...
@@ -16,6 +17,7 @@ class Metric(ABC):
 
 
 class BidAskSpreadMetric(Metric):
+    WINDOW_LENGTH = 600 # 600 * 32bytes = 19.2KB
     BIP = 10000
     ALPHA = 0.001
 
@@ -34,7 +36,6 @@ class BidAskSpreadMetric(Metric):
         print(f'BEST BID = {self.best_bid}, BEST ASK = {self.best_ask}')
         self.mid = (self.best_bid + self.best_ask) / 2
         self.spread_bps = ((self.best_ask - self.best_bid) / self.mid) * self.BIP
-        self.time_series_window.append(self.spread_bps)
         print(f'UPDATED SPREAD BPS = {self.spread_bps}')
 
         if self.rolling_spread_bps_mean is None and self.rolling_spread_bps_std is None:
@@ -54,6 +55,7 @@ class BidAskSpreadMetric(Metric):
     
 
 class OrderBookImbalanceMetric(Metric):
+    WINDOW_LENGTH = 600 # 600 * 32bytes = 19.2KB
     N_LEVELS = 5
 
     def __init__(self):
@@ -74,7 +76,6 @@ class OrderBookImbalanceMetric(Metric):
         else:
             self.obi = (bid_volume - ask_volume)/(bid_volume + ask_volume)
 
-        self.time_series_window.append(self.obi)
         print(f'UPDATED OBI VALUE = {self.obi}')
 
     def get_value(self) -> float:
@@ -83,6 +84,7 @@ class OrderBookImbalanceMetric(Metric):
 
 
 class VPINMetric(Metric):
+    WINDOW_LENGTH = 300 # 300 * 32B = 9.6KB
     BUCKET_VOLUME = 0.5 # refers to 50BTC units
     N_VPINS = 10 # The number of bucket filled VPINs we use to calculate the global VPIN
 
@@ -137,7 +139,6 @@ class VPINMetric(Metric):
                     self.curr_V_buy = 0.0
                     volume = leftover
 
-            self.time_series_window.append(self.vpin)
             if has_updated_global_vpin: print(f'UPDATED GLOBAL VPIN = {self.vpin}')
     
     def get_value(self) -> float:
