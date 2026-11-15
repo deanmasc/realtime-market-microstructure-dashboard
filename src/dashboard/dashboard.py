@@ -44,7 +44,7 @@ class Dashboard:
         window = list(metric.time_series_window)
         n = len(window)
         # oldest sample is at index 0, so it gets the oldest timestamp
-        x = [now - timedelta(milliseconds=250) * (n - 1 - i) for i in range(n)]
+        x = [now - timedelta(milliseconds=interval_ms) * (n - 1 - i) for i in range(n)]
 
         layout = dict(GRAPH_LAYOUT)
         layout["title"] = {"text": title, "x": 0, "font": {"size": 14}}
@@ -93,7 +93,7 @@ class Dashboard:
                            Output('vpin-chart', 'figure'),
                            Input('vpin-tick', 'n_intervals'))
         def update_vpin(n):
-            curr, fig = self._series(self.metrics_manager.get_metric(VPIN_KEY), "VPIN", 500, yaxis_range=[0, 1])
+            curr, fig = self._series(self.metrics_manager.get_metric(VPIN_KEY), "VPIN", 1000, yaxis_range=[0, 1])
             return f"{curr:.4f}", fig
 
         threading.Thread(target=self.app.run, kwargs={"port": 8050}, daemon=True).start()
