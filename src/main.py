@@ -25,7 +25,6 @@ async def main():
     async with asyncio.TaskGroup() as tg:
         tg.create_task(producer.produce())
         tg.create_task(consumer.consume())
-        tg.create_task(dashboard.start())
 
 if __name__ == "__main__":
     try:

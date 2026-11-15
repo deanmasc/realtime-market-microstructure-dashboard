@@ -31,6 +31,6 @@ class MetricsManager:
         if metric_key not in self.metric_dict:
             return None
 
-        return self.metric_dict[self.metric_key]
+        return self.metric_dict[metric_key]
         
 

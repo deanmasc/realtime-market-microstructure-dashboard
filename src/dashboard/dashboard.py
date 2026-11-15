@@ -37,10 +37,10 @@ class Dashboard:
 
         @self.app.callback(Output('header', 'children'), Input('header-tick', 'n_intervals'))
         def update_header(n):
-            return f"..."
+            return f"BTC Dashboard"
 
         @self.app.callback(Output('spread', 'children'),
-                           Output('spread-chart', 'children'), 
+                           Output('spread-chart', 'figure'), 
                            Input('spread-tick', 'n_intervals'))
         def update_spread(n):
             spread_metric = self.metrics_manager.get_metric(SPREAD_KEY)
@@ -48,14 +48,14 @@ class Dashboard:
             spread_metric.append_time_series_value(curr_spread)
             curr_time = datetime.now(timezone.utc)
 
-            figure = {"data": [{"x": [curr_time - timedelta(milliseconds=250)*i for i in range(spread_metric.time_series_window)], "y": spread_metric.time_series_window, "type": "scatter", "mode": "lines"}],
+            figure = {"data": [{"x": [curr_time - timedelta(milliseconds=250)*i for i in range(len(spread_metric.time_series_window))], "y": list(spread_metric.time_series_window), "type": "scatter", "mode": "lines"}],
                       "layout": {"title": "Spread (bps)",
                           "yaxis": {"title": "Value"},
                           "margin": {"l": 40, "r": 20, "t": 40, "b": 30}}}
             return curr_spread, figure
 
         @self.app.callback(Output('obi', 'children'),
-                           Output('obi-chart', 'children'), 
+                           Output('obi-chart', 'figure'), 
                            Input('obi-tick', 'n_intervals'))
         def update_obi(n):
             obi_metric = self.metrics_manager.get_metric(OBI_KEY)
@@ -63,14 +63,14 @@ class Dashboard:
             obi_metric.append_time_series_value(curr_spread)
             curr_time = datetime.now(timezone.utc)
                         
-            figure = {"data": [{"x": [curr_time - timedelta(milliseconds=250)*i for i in range(obi_metric.time_series_window)], "y": obi_metric.time_series_window, "type": "scatter", "mode": "lines"}],
+            figure = {"data": [{"x": [curr_time - timedelta(milliseconds=250) * i for i in range(len(obi_metric.time_series_window))], "y": list(obi_metric.time_series_window), "type": "scatter", "mode": "lines"}],
                         "layout": {"title": "Order Book Imbalance",
                             "yaxis": {"title": "Value"},
                             "margin": {"l": 40, "r": 20, "t": 40, "b": 30}}}
             return curr_spread, figure
 
         @self.app.callback(Output('vpin', 'children'),
-                           Output('vpin-chart', 'children'), 
+                           Output('vpin-chart', 'figure'), 
                            Input('vpin-tick', 'n_intervals'))
         def update_vpin(n):
             vpin_metric = self.metrics_manager.get_metric(VPIN_KEY)
@@ -78,7 +78,7 @@ class Dashboard:
             vpin_metric.append_time_series_value(curr_spread)
             curr_time = datetime.now(timezone.utc)
                         
-            figure = {"data": [{"x": [curr_time - timedelta(milliseconds=250)*i for i in range(vpin_metric.time_series_window)], "y": vpin_metric.time_series_window, "type": "scatter", "mode": "lines"}],
+            figure = {"data": [{"x": [curr_time - timedelta(milliseconds=250)*i for i in range(len(vpin_metric.time_series_window))], "y": list(vpin_metric.time_series_window), "type": "scatter", "mode": "lines"}],
                         "layout": {"title": "Volume-Synchronized Probability of Informed Trading",
                             "yaxis": {"title": "Value"},
                             "margin": {"l": 40, "r": 20, "t": 40, "b": 30}}}
