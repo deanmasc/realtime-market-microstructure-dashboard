@@ -73,7 +73,8 @@ class Dashboard:
         @self.app.callback(Output('header', 'children'), 
                            Input('header-tick', 'n_intervals'))
         def update_header(n):
-            return "BTCUSDT Microstructure"
+            spread_metric = self.metrics_manager.get_metric(SPREAD_KEY)
+            return f"BTCUSDT Microstructure, ${round(spread_metric.mid, 2)}"
 
         @self.app.callback(Output('spread', 'children'), 
                            Output('spread-chart', 'figure'),

@@ -27,7 +27,7 @@ class MetricsManager:
         for metric in self.stream_metric_dict[msg_stream]:
             metric.update(msg)
 
-    def get_metric(self, metric_key: str):
+    def get_metric(self, metric_key: str) -> Metric:
         if metric_key not in self.metric_dict:
             return None
 
